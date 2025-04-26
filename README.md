@@ -1,3 +1,3 @@
-# 🎙 TapMic Discord Bot
+# 🚨 PFP Alerter Discord Bot 🚨
 
-A discord bot the records and transcribes discord convertiations for use in meatings and other settings.
+A _discord bot_ that sends alert messages (with funny message) whenever a user changes their **profile picture** or there **display name** on _discord_.

@@ -5,7 +5,14 @@ from discord.ext import commands
 from discord import app_commands
 import discord
 
-class Client(discord.Client):
+class Bot(commands.Bot):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+    
+    async def setup_hook(self):
+        await self.tree.sync()
+        print("Synced commands.")
+
     async def on_ready(self):
         print("Logged in as {self.user}")
 
@@ -21,10 +28,10 @@ if __name__ == "__main__":
     intents = discord.Intents.default()
     intents.message_content = True
 
-    client = Client(command_perfix="!", intents=intents)
+    bot = Bot(command_prefix="!", intents=intents)
     
-    @client.tree.command(name="ping", description="A test ping that reply 'pong' back to you")
+    @bot.tree.command(name="ping", description="A test ping that reply 'pong' back to you")
     async def pingCommand(interaction: discord.Interaction):
         await interaction.response.send_message("Pong! 🤖")
 
-    client.run(secrets["DISCORD_TOKEN"])
+    bot.run(secrets["DISCORD_TOKEN"])

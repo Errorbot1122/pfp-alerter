@@ -100,8 +100,6 @@ def get_settings_from_guild(
     except:
         data = {}
 
-    raise NotImplementedError("TEST123 POG")
-
     if file_descriptor:
         return (data, file)
     else:
@@ -193,6 +191,7 @@ if __name__ == "__main__":
 
     bot = Bot(command_prefix="!", intents=intents)
 
+    # Bot commands
     @bot.tree.command(
         name="ping", description="A test ping that reply 'pong' back to you"
     )
@@ -266,6 +265,7 @@ if __name__ == "__main__":
             "Test completed successfully!", ephemeral=True
         )
 
+    # Error handling
     @bot.tree.error
     async def on_app_command_error(
         interaction: discord.Interaction, error: app_commands.AppCommandError

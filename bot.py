@@ -13,10 +13,11 @@ import discord
 JSON_SETTINGS = {"sort_keys": True, "indent": 4, "separators": (", ", ": ")}
 
 ERROR_MESSAGE = (
-    "Could not save setting as an error has occurred!\n-# (Please post the"
-    + " following stack trace to [here](github.com/Errorbot1122/pfp-alerter/issues))\n```\n"
-    + "{0}```"
+    "\n-# (Please post the following stack trace to"
+    + " [here](github.com/Errorbot1122/pfp-alerter/issues))\n```\n{0}```"
 )
+
+UNKNOWN_ERROR_MSG = "An unknown error has occurred! " + ERROR_MESSAGE
 
 
 class Bot(commands.Bot):
@@ -98,6 +99,8 @@ def get_settings_from_guild(
         data = json.loads(file.read())
     except:
         data = {}
+
+    raise NotImplementedError("TEST123 POG")
 
     if file_descriptor:
         return (data, file)
@@ -236,7 +239,10 @@ if __name__ == "__main__":
             settings, _ = get_settings_from_guild(interaction.guild)
         except Exception as e:
             tb = traceback.format_exc()
-            await interaction.response.send_message(ERROR_MESSAGE.format(str(tb)))
+            await interaction.response.send_message(
+                "Could not save file because an error has occurred!"
+                + ERROR_MESSAGE.format(str(tb))
+            )
             return
 
         if "channel" not in settings:
@@ -256,10 +262,41 @@ if __name__ == "__main__":
 
         await channel.send("🚨 This is a test alert, 123 🚨")
 
-        msg = await interaction.response.send_message(
+        await interaction.response.send_message(
             "Test completed successfully!", ephemeral=True
         )
-        sleep(5)
-        await interaction.delete_original_response()
+
+    @bot.tree.error
+    async def on_app_command_error(
+        interaction: discord.Interaction, error: app_commands.AppCommandError
+    ):
+        if isinstance(error, app_commands.MissingPermissions):
+            await interaction.response.send_message(
+                "🚫 You don't have the required permissions to run this command.",
+                ephemeral=True,
+            )
+
+        elif isinstance(error, app_commands.MissingRole):
+            await interaction.response.send_message(
+                f"🚫 You need the `{error.missing_role}` role to run this command.",
+                ephemeral=True,
+            )
+
+        elif isinstance(error, app_commands.TransformerError):
+            await interaction.response.send_message(
+                "❗ Invalid value provided. Please check your input and try again.",
+                ephemeral=True,
+            )
+
+        elif isinstance(error, app_commands.CheckFailure):
+            await interaction.response.send_message(
+                "❌ You don't meet the requirements to use this command.",
+                ephemeral=True,
+            )
+        else:
+            tb = traceback.format_exc()
+            await interaction.response.send_message(
+                UNKNOWN_ERROR_MSG.format(str(tb)), ephemeral=True
+            )
 
     bot.run(cast(str, secrets["DISCORD_TOKEN"]))

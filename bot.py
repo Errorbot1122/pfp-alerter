@@ -191,6 +191,7 @@ if __name__ == "__main__":
     )
     bot = Bot(command_prefix="!", intents=intents)
 
+    @bot.check
     def check_perms():
         async def predicate(interaction: discord.Interaction):
             if interaction.guild is None:

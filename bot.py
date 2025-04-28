@@ -186,19 +186,34 @@ if __name__ == "__main__":
     if "DISCORD_TOKEN" not in secrets:
         raise ValueError(".env must include a DISCORD_TOKEN!")
 
-    intents = discord.Intents.default()
-    intents.message_content = True
-
+    intents = discord.Intents(
+        guilds=True, members=True, guild_messages=True, message_content=True
+    )
     bot = Bot(command_prefix="!", intents=intents)
 
-    # Bot commands
+    def check_perms():
+        async def predicate(interaction: discord.Interaction):
+            if interaction.guild is None:
+                raise app_commands.CheckFailure(
+                    "This command can only be run in a server."
+                )
+
+            bot_member = interaction.guild.me
+            user_member = cast(discord.Member, interaction.user)
+
+            if bot_member is None:
+                raise app_commands.CheckFailure("Bot member not found.")
+
+            return user_member.top_role <= bot_member.top_role
+
+        return app_commands.check(predicate)
+
     @bot.tree.command(
         name="ping", description="A test ping that reply 'pong' back to you"
     )
     async def pingCommand(interaction: discord.Interaction):
         await interaction.response.send_message("Pong! 🤖")
 
-    # TODO: Add permission check
     @bot.tree.command(
         name="setchannel", description="Sets the channel for sending alerts."
     )
@@ -290,7 +305,8 @@ if __name__ == "__main__":
 
         elif isinstance(error, app_commands.CheckFailure):
             await interaction.response.send_message(
-                "❌ You don't meet the requirements to use this command.",
+                # Default error message if non
+                str(error) or "❌ You don't meet the requirements to use this command.",
                 ephemeral=True,
             )
         else:

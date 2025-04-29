@@ -15,12 +15,12 @@ We mostly follow the [PEP 8 style guide](https://peps.python.org/pep-0008/) for 
 
 **Example:**
 
-Bad:
+❌ Bad:
 ```python
 text = "This is a very long string that goes on and on without being split, and that's hard to read."
 ```
 
-Good:
+✔ Good:
 ```python
 text = (
     "This is a very long string that goes on and on without being split, and that's "
@@ -123,6 +123,8 @@ We use a slightly tweaked version of [GitHub Flow](https://docs.github.com/en/ge
 - Releases are made from those branches.
 - No random experimental code should land in them directly.
 
+Commits are also follow the Conventional Commits Standard. See the following [cheatsheet]()
+
 **Why:**  
 Keeps our main codebases stable and makes it easier to track what’s live, what’s in progress, and what’s safe to test.
 
@@ -161,3 +163,90 @@ Whenever you make a big change or add a new feature, take a minute to update the
 
 If you’re curious about how people write good tech specs, this post’s a nice intro:  
 - [Diátaxis Framework — Explanation guide](https://diataxis.fr/explanation/)
+
+<!-- TODO: Add Images -->
+# Contributing for Noobs
+
+This project welcomes absolute beginners! You don’t need to be a coding pro to contribute — reporting bugs, suggesting ideas, or tweaking text as all very useful.
+
+If you don't know anything about contributing using git and github *(or now very little)* this is a mini-tutorial of how to contribute!
+
+## The easiest way... **Issues**
+The easiest way to contribute, even if you don't know how to code at all is by creating an [issue](github.com/Errorbot1122/pfp-alerter/issues)! An issue is basically a bug, and feature reporting place all in one area.
+
+Creating an issue is really simple! **All you need to do is:**
+
+ 1. Open the `Issues` tab
+ 2. Hit `Create Issue` button
+ 3. Create the issue!
+
+**Here are some tips when writing issues:**
+
+ - You can use Markdown <sub>*(`the _cool_ **formatting** sites like [reddit](redit.com) and ![discord logo](https://static.vecteezy.com/system/resources/previews/019/493/250/non_2x/discord-logo-discord-icon-discord-symbol-free-free-vector.jpg) _**use**_`)*</sub> to add formatting to your issue, or feature request. **([Markdown cheat sheet](https://github.com/lifeparticle/Markdown-Cheatsheet)*
+ - You can add picture to issues by just dragging them into the text area! ![thumbs up meme](https://content.imageresizer.com/images/memes/Thumbs-up-emoji-meme-4.jpg)
+ - If you want to link some code, or maybe an error message,
+    ```
+    Surround it in a code block!
+    ```
+ - To write a good issue, first check if any already exist (search bar, remove the `is:open` part and search) then after that, explain your problem in as much detail as possible and follow any templates *(if any)* that show up when creating it.
+
+Issues are basically the easy way out, however, if you want to become a _real_ contributor you want to start making...
+
+## Pull Requests 😱
+
+Before you start making pull requests, it is required that you learn [Git](https://git-scm.com/). **Here are some helpful resources:**
+
+ - [Git CLI for Noobs](https://www.youtube.com/watch?v=CvUiKWv2-C0)
+ - [VS Code](https://code.visualstudio.com/docs/sourcecontrol/intro-to-git)
+ - [PyCharm](https://www.jetbrains.com/help/pycharm/set-up-a-git-repository.html#set-passwords-for-git-remotes)
+
+
+A pull request is basically like a feature request, except you write the code for them. **Pull requests** are the defacto way people actually contribute to open source projects. *(like this one!)*
+
+Lets say you have an idea on a feature, that you think you can make. **Here are the steps for creating a pull request:**
+
+ 1. ### Creating a fork
+	**A fork** is basically you own copy of a repository *(all the code)*. You got to make a copy as you most-likely aren't allowed to just directly edit a repository without their permission *(thats what maintainers are for)*
+
+	>  [!NOTE]
+	> You only need to create a fork once, after that you will instead skip to **Step 2** for new ideas
+
+	To create a fork, open the original Github Repository, Hit the fork option and enter hit create fork *(no need to change any settings)*.
+	
+	Now all you need to do is locally clone your fork and you can move on to...
+
+	
+ 2. ### Create the feature branch
+	**A branch** is basically kinda like a fork in your own repo, it allows you go off on a tangent and make changes on stuff without worrying about the consequences of your actions. Think of it like a you saving a game, making a copy and like killing an NPC for fun, just to see what happens. If something cool does happen, you can continue that save ignoring your main one *(that is called merging it git, basically adding changes from one branch to another)*
+
+	The branch should be named on what you plan to do with it. For example, if i want to work on a `/shout` command, you could name it `shout-command`. The name should be pretty sort *(1-2 words)*
+
+ 3. ### Make some commits
+    **Commits** are essentially the "auto-saves that happen in a game. They log any changes you make to the code in between sections. You do have to manually make them.
+	
+	As a general rule of thumb, your commits should most likely be pretty small *should* consist of fully working code. For example, if you where working on a shout command, you could maybe commit when you get V1 finished. Then maybe you add documentation, and commit after you finish that. <small>*(tbh the shout command wasn't a good example, but you get the idea)*</small>. As stated above, you should use the [Conventional Commits](https://gist.github.com/qoomon/5dfcdf8eec66a051ecd85625518cfd13) naming structure to keep it consistent.
+
+	> [!WARNING]
+	> You must push after finishing your feature, otherwise you cannot proceed to the next step.
+
+ 4. ### Create the pull request
+	Now that you have finished your feature, you must now create a **pull request**.
+
+	To do this, open the original repo in Github, hit the pull request tab and hit, create pull request. Check the top and make sure it says something like:
+    ```
+    base repository: Errorbot1122/pfp-alerter base: main <- base repository: YOUR_USERNAME/pfp-alerter base: YOUR_BRANCH
+    ```
+
+	<small>*(if this is not correct you can change it by hitting the drop down)*</small>
+	
+	Now write any changes you made in the pull request description, and hit `Create pull request` and wait! Most likely the owner will either accept it, decline it, or give you feedback. **Make sure to follow any feedback if you want your PR to get accepted.**
+	
+	Now some repos can have checks that run. Checks are basically scripts that get automatically run to check if your code follows the [Style Guide](#contributing-guide). If you get any fails, you can open it and check for any mistakes you made.
+
+<br/>
+
+---
+<br/>
+	
+**Good job for completing your PR!** If your pull request gets accepted and merged, you’ll want to sync your fork to keep it up-to-date before working on your next idea. **Now if you have more ideas, just do it all over again *(skipping to Step 2)*, for all of time. =D**
+<sub><sub><sub>`\j 😭`</sub></sub></sub>

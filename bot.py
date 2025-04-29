@@ -47,13 +47,15 @@ def set_json_key(x: Any, key: Any, value: Optional[Any] = None):
     Raises
     ------
     TypeError
-        when you try to add a non-integer key to a list or `x` is not a list or dict.
+        when you try to add a non-integer key to a list or `x` is not a
+        list or dict.
     """
 
     if isinstance(x, list):
         if not isinstance(key, int):
             raise TypeError(
-                f"Key of type {type(key)} is not allowed on list object! (Key: {str(key)})"
+                f"Key of type {type(key)} is not allowed on list object!"
+                + f"(Key: {str(key)})"
             )
 
         x.index(value, key)
@@ -81,12 +83,14 @@ def get_settings_from_guild(
     guild : discord.Guild
         the chosen guild (server) to get the settings for.
     file_descriptor : bool, optional
-        choses wether to return the opened file or not, by default `False`
+        choses wether to return the opened file or not, by default
+        `False`
 
     Returns
     -------
     tuple[dict, Optional[TextIOWrapper]]
-        returns the save data with the file. (file only if `file_descriptor` is True)
+        returns the save data with the file. (file only if
+        `file_descriptor` is True)
 
     Raises
     ------
@@ -113,7 +117,8 @@ def save_guild_setting(
     key: Optional[Any | list[Any]] = None,
     create_keys: bool = False,
 ):
-    """Save ether a single setting or overwrite all the settings for a guild.
+    """Save ether a single setting or overwrite all the settings for a
+    guild.
 
     Parameters
     ----------
@@ -122,24 +127,27 @@ def save_guild_setting(
     date : dict | any
         the data that you want to overwrite
     key : Optional[any, list[any]], optional
-        The specific setting you want to overwrite, if `None`, overwrite every setting
+        The specific setting you want to overwrite, if `None`, overwrite
+         every setting
 
-        If the setting is nested, separate each key in a list or in a period separated
-        string. By default `None`
+        If the setting is nested, separate each key in a list or in a
+        period separated string. By default `None`
     create_keys : bool, optional
-        Wether the create new keys if not existing already, by default `False`
+        Wether the create new keys if not existing already, by default
+        `False`
 
     Raises
     ------
     FileNotFoundError
-        when `key` is has a value and `create_keys` is `False` **OR** the `settings`
-        folder dose not exist.
+        when `key` is has a value and `create_keys` is `False` **OR**
+        the `settings` folder dose not exist.
     KeyError
-        when one of your keys don't exist in the settings and `create_keys` is `False`
-        or if `create_keys` is `True` and you are trying to add an string key to a list.
+        when one of your keys don't exist in the settings and
+        `create_keys` is `False`  or if `create_keys` is `True` and you
+        are trying to add an string key to a list.
     TypeError
-        when you try to add a non-integer key to a list or you try to key an un-keyable
-        value (not list or dict).
+        when you try to add a non-integer key to a list or you try to
+        key an un-keyable value *(not list or dict)*.
     """
 
     if isinstance(key, str):
@@ -179,7 +187,7 @@ def save_guild_setting(
 
 if __name__ == "__main__":
     if not path.exists(".env"):
-        raise FileNotFoundError(".env file dose not exsist!")
+        raise FileNotFoundError(".env file dose not exist!")
 
     secrets = dotenv_values(".env")
 
@@ -270,7 +278,8 @@ if __name__ == "__main__":
         channel = cast(discord.TextChannel, bot.get_channel(settings["channel"]))
         if channel is None:
             await interaction.response.send_message(
-                "Channel dose not exist! Please set a new one by running `/setchannel`.",
+                "Channel dose not exist! Please set a new one by running "
+                + "`/setchannel`.",
                 ephemeral=True,
             )
             return

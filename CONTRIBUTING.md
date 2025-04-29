@@ -123,7 +123,7 @@ We use a slightly tweaked version of [GitHub Flow](https://docs.github.com/en/ge
 - Releases are made from those branches.
 - No random experimental code should land in them directly.
 
-Commits are also follow the Conventional Commits Standard. See the following [cheatsheet]()
+Commits are also follow the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) Standard. See the following [cheatsheet](https://gist.github.com/qoomon/5dfcdf8eec66a051ecd85625518cfd13)
 
 **Why:**  
 Keeps our main codebases stable and makes it easier to track what’s live, what’s in progress, and what’s safe to test.
@@ -190,7 +190,7 @@ Creating an issue is really simple! **All you need to do is:**
     ```
  - To write a good issue, first check if any already exist (search bar, remove the `is:open` part and search) then after that, explain your problem in as much detail as possible and follow any templates *(if any)* that show up when creating it.
 
-Issues are basically the easy way out, however, if you want to become a _real_ contributor you want to start making...
+Issues are basically the easy way out, however, if you want to become a _real_ contributor you want to start making... 
 
 ## Pull Requests 😱
 

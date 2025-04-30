@@ -10,7 +10,7 @@ from discord.ext import commands
 from discord import app_commands, channel, guild, message
 import discord
 
-JSON_SETTINGS = {"sort_keys": True, "indent": 4, "separators": (", ", ": ")}
+JSON_save = {"sort_keys": True, "indent": 4, "separators": (", ", ": ")}
 
 ERROR_HEADER = (
     "\n-# (Please post the following stack trace to"
@@ -105,26 +105,26 @@ def set_json_key(x: Any, key: Any, value: Optional[Any] = None):
     elif isinstance(x, dict):
         x[key] = value
     else:
-        raise TypeError(f"Cannot access key on type '{type(x)}'! (Key: {str(key)})")
+        raise TypeError(f"Cannot create key on type '{type(x)}'! (Key: {str(key)})")
 
 
 @overload
-def get_settings_from_guild(
+def get_save_from_guild(
     guild: discord.Guild, file_descriptor: Literal[False] = False
 ) -> tuple[Any, None]: ...
 @overload
-def get_settings_from_guild(
+def get_save_from_guild(
     guild: discord.Guild, file_descriptor: Literal[True]
 ) -> tuple[Any, TextIO]: ...
-def get_settings_from_guild(
+def get_save_from_guild(
     guild: discord.Guild, file_descriptor: bool = False
 ) -> tuple[Any, Optional[TextIO]]:
-    """Gets all the settings for the chosen guild.
+    """Gets all the save for the chosen guild.
 
     Parameters
     ----------
     guild : discord.Guild
-        the chosen guild (server) to get the settings for.
+        the chosen guild (server) to get the save for.
     file_descriptor : bool, optional
         choses wether to return the opened file or not, by default
         `False`
@@ -138,10 +138,10 @@ def get_settings_from_guild(
     Raises
     ------
     FileNotFound
-        when `settings/[guild_id].json` dose not already exist
+        when `save/[guild_id].json` dose not already exist
     """
 
-    file = open("settings/" + str(guild.id) + ".json", "w+" if file_descriptor else "r")
+    file = open("save/" + str(guild.id) + ".json", "w+" if file_descriptor else "r")
     try:
         data = json.loads(file.read())
     except:
@@ -154,9 +154,9 @@ def get_settings_from_guild(
         return (data, None)
 
 
-def save_guild_setting(
+def save_guild_save(
     guild: discord.Guild,
-    data: dict | Any,
+    data: Any,
     key: Optional[Any | list[Any]] = None,
     create_keys: bool = False,
 ):
@@ -166,8 +166,8 @@ def save_guild_setting(
     Parameters
     ----------
     guild : discord.Guild
-        the chosen guild (server) to get the settings for
-    date : dict | any
+        the chosen guild (server) to get the save for
+    data : Any
         the data that you want to overwrite
     key : Optional[any, list[any]], optional
         The specific setting you want to overwrite, if `None`, overwrite
@@ -197,20 +197,20 @@ def save_guild_setting(
         key = key.split(".")
 
     try:
-        current_data, file = get_settings_from_guild(guild, True)
+        current_data, file = get_save_from_guild(guild, True)
     except FileNotFoundError as e:
         # Can't do anything about that, so relay that to the devs...
         if key is not None and not create_keys:
             raise e
 
-        file = open("settings/" + str(guild.id) + ".json", "w+")
+        file = open("save/" + str(guild.id) + ".json", "w+")
         current_data = {}
 
     try:
         file: TextIO = file
         # No key = overwrite
         if key is None:
-            json.dump(data, file, **JSON_SETTINGS)
+            json.dump(data, file, **JSON_save)
             return
 
         # Nest into the last entry before the data
@@ -223,9 +223,66 @@ def save_guild_setting(
 
         # Overwrite the key
         set_json_key(constrained_data, key[-1], data)
-        json.dump(current_data, file, **JSON_SETTINGS)
+        json.dump(current_data, file, **JSON_save)
     finally:
         file.close()
+
+
+@overload
+def get_key(
+    data: Any, key: Any, allow_errors: Literal[False] = False
+) -> Any | None: ...
+@overload
+def get_key(data: Any, key: Any, allow_errors: Literal[True]) -> Any: ...
+def get_key(data: Any, key: Any, allow_errors: bool = False) -> Any | None:
+    """Finds the corresponding value with a key in json data.
+
+    Parameters
+    ----------
+    data : Any
+        the json data you want to search
+    key : Any | list[Any]
+        the specific location you want to get the key from, if the value
+        is nested, separate each key in a list or in a period separated
+        string.
+    allow_errors : bool, optional
+        weather to allow raising KeyError instead of return None, by
+        default False
+
+    Returns
+    -------
+    Any | None
+        The value wanted if found
+
+    Raises
+    ------
+    KeyError
+        If a key could not be found
+    """
+    if isinstance(key, str):
+        key = key.split(".")
+
+    constrained_data = data
+    for key_index in range(len(key) - 1):
+        current_key = key[key_index]
+        if current_key not in constrained_data:
+            if allow_errors:
+                raise KeyError(f"Cannot find key at {".".join(key[:key_index])}!")
+            else:
+                return None
+
+        try:
+            constrained_data = constrained_data[current_key]
+        except TypeError as e:
+            if allow_errors:
+                raise TypeError(
+                    f"Cannot get key on type '{type(constrained_data)}' "
+                    + f"({".".join(key[:key_index])})"
+                )
+            else:
+                return None
+
+    return constrained_data
 
 
 if __name__ == "__main__":
@@ -279,8 +336,8 @@ if __name__ == "__main__":
             return
 
         try:
-            save_guild_setting(
-                channel.guild, channel.id, key="channel", create_keys=True
+            save_guild_save(
+                channel.guild, channel.id, key="setting.channel", create_keys=True
             )
         except Exception as e:
             tb = traceback.format_exc()
@@ -302,7 +359,7 @@ if __name__ == "__main__":
             return
 
         try:
-            settings, _ = get_settings_from_guild(interaction.guild)
+            save, _ = get_save_from_guild(interaction.guild)
         except Exception as e:
             tb = traceback.format_exc()
             await interaction.response.send_message(
@@ -311,14 +368,15 @@ if __name__ == "__main__":
             )
             return
 
-        if "channel" not in settings:
+        channel_id = get_key(save, "setting.channel")
+        if not channel_id:
             await interaction.response.send_message(
-                "Channel setting not set! Please run `/setchannel` to fix.",
+                "Channel save not set! Please run `/setchannel` to fix.",
                 ephemeral=True,
             )
             return
 
-        channel = cast(discord.TextChannel, bot.get_channel(settings["channel"]))
+        channel = cast(discord.TextChannel, bot.get_channel(channel_id))
         if channel is None:
             await interaction.response.send_message(
                 "Channel dose not exist! Please set a new one by running "

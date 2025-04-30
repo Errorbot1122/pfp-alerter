@@ -298,12 +298,21 @@ if __name__ == "__main__":
     bot = Bot(command_prefix="!", intents=intents)
 
     @bot.check
-    def check_perms():
+    def check_guild():
         async def predicate(interaction: discord.Interaction):
             if interaction.guild is None:
                 raise app_commands.CheckFailure(
                     "This command can only be run in a server."
                 )
+
+            return True
+
+        return app_commands.check(predicate)
+
+    def check_perms():
+        async def predicate(interaction: discord.Interaction):
+            if interaction.guild is None:
+                return False
 
             bot_member = interaction.guild.me
             user_member = cast(discord.Member, interaction.user)
@@ -324,6 +333,7 @@ if __name__ == "__main__":
     @bot.tree.command(
         name="setchannel", description="Sets the channel for sending alerts."
     )
+    @check_perms()
     async def setChannelCommand(
         interaction: discord.Interaction, channel: discord.TextChannel
     ):
@@ -349,6 +359,7 @@ if __name__ == "__main__":
     @bot.tree.command(
         name="testalert", description="Tests sending an alert to the chosen channel"
     )
+    @check_perms()
     async def testAlert(interaction: discord.Interaction):
         if interaction.guild is None:
             await interaction.response.send_message(

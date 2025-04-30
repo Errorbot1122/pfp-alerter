@@ -12,12 +12,12 @@ import discord
 
 JSON_SETTINGS = {"sort_keys": True, "indent": 4, "separators": (", ", ": ")}
 
-ERROR_MESSAGE = (
+ERROR_HEADER = (
     "\n-# (Please post the following stack trace to"
-    + " [here](github.com/Errorbot1122/pfp-alerter/issues))\n```\n{0}```"
+    + " (here)[github.com/Errorbot1122/pfp-alerter/issues])"
 )
-
-UNKNOWN_ERROR_MSG = "An unknown error has occurred! " + ERROR_MESSAGE
+STACK_TRACE = "\n```\n{0}```"
+ERROR_MESSAGE = ERROR_HEADER + STACK_TRACE
 
 
 class Bot(commands.Bot):
@@ -30,6 +30,49 @@ class Bot(commands.Bot):
 
     async def on_ready(self):
         print("Logged in as {self.user}")
+
+
+def split_length(text: str, max_length: int) -> list[str]:
+    """Split the text by text length
+
+    Parameters
+    ----------
+    text : str
+        the text you want to split
+    max_length : int
+        the maximum number of characters before a split (exclusive)
+
+    Returns
+    -------
+    list[str]
+        the list of splitted text
+    """
+    true_max_length = max_length - 1
+    splits = [""]
+
+    if len(text) < true_max_length:
+        return [text]
+
+    lines = text.splitlines()
+    current_len = 0
+    for line in lines:
+        # Single Line that are too long get forcibly split
+        # TODO: Add word level spiting
+        while len(line) > true_max_length:
+            splits[-1] = line[:true_max_length]
+            line = line[true_max_length:]
+
+            current_len = 0
+            splits.append("")
+
+        current_len += len(line)
+        if current_len > true_max_length:
+            current_len = len(line)
+            splits.append(line)
+        else:
+            splits[-1] += "\n" + line
+
+    return splits
 
 
 def set_json_key(x: Any, key: Any, value: Optional[Any] = None):
@@ -322,7 +365,13 @@ if __name__ == "__main__":
         else:
             tb = traceback.format_exc()
             await interaction.response.send_message(
-                UNKNOWN_ERROR_MSG.format(str(tb)), ephemeral=True
+                "An unknown error has occurred! " + ERROR_HEADER, ephemeral=True
             )
+
+            # Fix for 2000 char max message
+            # TODO: Send to log files and send log id instead
+            split_traceback = split_length(str(tb), 1993)  # -7 characters for codeblock
+            for trace_part in split_traceback:
+                await interaction.followup.send("```" + trace_part + "\n```")
 
     bot.run(cast(str, secrets["DISCORD_TOKEN"]))

@@ -154,7 +154,7 @@ def get_save_from_guild(
         return (data, None)
 
 
-def save_guild_save(
+def save_guild_data(
     guild: discord.Guild,
     data: Any,
     key: Optional[Any | list[Any]] = None,
@@ -336,7 +336,7 @@ if __name__ == "__main__":
             return
 
         try:
-            save_guild_save(
+            save_guild_data(
                 channel.guild, channel.id, key="setting.channel", create_keys=True
             )
         except Exception as e:

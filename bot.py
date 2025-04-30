@@ -1,13 +1,11 @@
 from typing import Literal, TextIO, Optional, Any, cast, overload
 from os import path
-from time import sleep
 import traceback
 import json
 
-from aiohttp import client
 from dotenv import dotenv_values
 from discord.ext import commands
-from discord import app_commands, channel, guild, message
+from discord import app_commands
 import discord
 
 JSON_save = {"sort_keys": True, "indent": 4, "separators": (", ", ": ")}

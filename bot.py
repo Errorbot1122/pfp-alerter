@@ -139,13 +139,18 @@ def get_save_from_guild(
         when `save/[guild_id].json` dose not already exist
     """
 
-    file = open("save/" + str(guild.id) + ".json", "w+" if file_descriptor else "r")
+    file_path = "save/" + str(guild.id) + ".json"
+    if not path.exists(file_path):
+        open(file_path, "w").close()
+
+    file = open(file_path, "r+" if file_descriptor else "r")
     try:
-        data = json.loads(file.read())
-    except:
+        data = json.load(file)
+    except json.JSONDecodeError as e:
         data = {}
 
     if file_descriptor:
+        file.seek(0)
         return (data, file)
     else:
         file.close()
@@ -222,6 +227,7 @@ def save_guild_data(
         # Overwrite the key
         set_json_key(constrained_data, key[-1], data)
         json.dump(current_data, file, **JSON_save)
+        file.truncate()
     finally:
         file.close()
 
@@ -486,6 +492,7 @@ if __name__ == "__main__":
                 "An unknown error has occurred! " + ERROR_HEADER, ephemeral=True
             )
 
+            print(str(tb))
             # Fix for 2000 char max message
             # TODO: Send to log files and send log id instead
             split_traceback = split_length(str(tb), 1993)  # -7 characters for codeblock

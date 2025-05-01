@@ -228,11 +228,11 @@ def save_guild_data(
 
 @overload
 def get_key(
-    data: Any, key: Any, allow_errors: Literal[False] = False
+    data: Any, key: Any | list[Any], allow_errors: Literal[False] = False
 ) -> Any | None: ...
 @overload
-def get_key(data: Any, key: Any, allow_errors: Literal[True]) -> Any: ...
-def get_key(data: Any, key: Any, allow_errors: bool = False) -> Any | None:
+def get_key(data: Any, key: Any | list[Any], allow_errors: Literal[True]) -> Any: ...
+def get_key(data: Any, key: Any | list[Any], allow_errors: bool = False) -> Any | None:
     """Finds the corresponding value with a key in json data.
 
     Parameters
@@ -329,6 +329,57 @@ if __name__ == "__main__":
     )
     async def pingCommand(interaction: discord.Interaction):
         await interaction.response.send_message("Pong! 🤖")
+
+    @bot.tree.command(
+        name="optout",
+        description="Chose to opt out of alerting users when you change your profile "
+        + "picture or display name change.",
+    )
+    async def optOut(interaction: discord.Interaction):
+        opt_out_key = ["members", str(interaction.user.id), "opt_out"]
+        guild = cast(discord.Guild, interaction.guild)
+
+        save = get_save_from_guild(guild)
+        already_opted_out: bool = get_key(save, opt_out_key) or False
+
+        if already_opted_out:
+            await interaction.response.send_message(
+                "You are already opted out! Run `/optin` to opt back in.",
+                ephemeral=True,
+            )
+            return
+
+        save_guild_data(guild, True, opt_out_key, create_keys=True)
+
+        await interaction.response.send_message(
+            "✔ You have successfully been opted out! Run `/optin` to opt back in.",
+            ephemeral=True,
+        )
+
+    @bot.tree.command(
+        name="optin",
+        description="Chose to opt into alerting users when you change your profile "
+        + "picture or display name change.",
+    )
+    async def optIn(interaction: discord.Interaction):
+        opt_out_key = ["members", str(interaction.user.id), "opt_out"]
+        guild = cast(discord.Guild, interaction.guild)
+
+        save = get_save_from_guild(guild)
+        already_opted_out: bool = get_key(save, opt_out_key) or False
+
+        if not already_opted_out:
+            await interaction.response.send_message(
+                "You are already opted in! Run `/optout` to opt out.", ephemeral=True
+            )
+            return
+
+        save_guild_data(guild, False, opt_out_key, create_keys=True)
+
+        await interaction.response.send_message(
+            "✔ You have successfully been opted in! Run `/optout` to opt back in.",
+            ephemeral=True,
+        )
 
     @bot.tree.command(
         name="setchannel", description="Sets the channel for sending alerts."

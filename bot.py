@@ -218,8 +218,8 @@ def save_guild_data(
 
         # Nest into the last entry before the data
         constrained_data = current_data
-        for key_index in range(len(key) - 1):
-            current_key = key[key_index]
+        for current_key in key[:-1]:
+
             if create_keys and current_key not in constrained_data:
                 set_json_key(constrained_data, current_key, {})
             constrained_data = constrained_data[current_key]
@@ -267,7 +267,7 @@ def get_key(data: Any, key: Any | list[Any], allow_errors: bool = False) -> Any 
         key = key.split(".")
 
     constrained_data = data
-    for key_index in range(len(key) - 1):
+    for key_index in range(len(key)):
         current_key = key[key_index]
         if current_key not in constrained_data:
             if allow_errors:
@@ -451,11 +451,14 @@ if __name__ == "__main__":
             )
             return
 
-        await channel.send("🚨 This is a test alert, 123 🚨")
+        alert = await channel.send("🚨 This is a test alert, 123 🚨")
 
         await interaction.response.send_message(
-            "Test completed successfully!", ephemeral=True
+            f"Test completed successfully!\n-# Jump to msg: {alert.jump_url}",
+            ephemeral=True,
         )
+
+        await alert.delete(delay=5)
 
     # Error handling
     @bot.tree.error

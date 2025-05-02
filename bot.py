@@ -418,8 +418,6 @@ if __name__ == "__main__":
         guild = cast(discord.Guild, interaction.guild)
 
         save, _ = get_save_from_guild(guild)
-        already_opted_out: bool = get_key(save, opt_out_key) or False
-
         already_opted_out: bool = get_key(save, pre_key + ["opt_out"]) or False
         if already_opted_out:
             await interaction.response.send_message(

@@ -345,7 +345,7 @@ if __name__ == "__main__":
         opt_out_key = ["members", str(interaction.user.id), "opt_out"]
         guild = cast(discord.Guild, interaction.guild)
 
-        save = get_save_from_guild(guild)
+        save, _ = get_save_from_guild(guild)
         already_opted_out: bool = get_key(save, opt_out_key) or False
 
         if already_opted_out:
@@ -371,7 +371,7 @@ if __name__ == "__main__":
         opt_out_key = ["members", str(interaction.user.id), "opt_out"]
         guild = cast(discord.Guild, interaction.guild)
 
-        save = get_save_from_guild(guild)
+        save, _ = get_save_from_guild(guild)
         already_opted_out: bool = get_key(save, opt_out_key) or False
 
         if not already_opted_out:

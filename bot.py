@@ -1,14 +1,16 @@
+import re
 from typing import Literal, TextIO, Optional, Any, cast, overload
+from random import choice
 from os import path
 import traceback
 import json
 
 from dotenv import dotenv_values
-from discord.ext import commands
+from discord.ext import commands, tasks
 from discord import app_commands
 import discord
 
-JSON_save = {"sort_keys": True, "indent": 4, "separators": (", ", ": ")}
+JSON_SAVE_PERMS = {"sort_keys": True, "indent": 4, "separators": (", ", ": ")}
 
 ERROR_HEADER = (
     "\n-# (Please post the following stack trace to"
@@ -16,6 +18,18 @@ ERROR_HEADER = (
 )
 STACK_TRACE = "\n```\n{0}```"
 ERROR_MESSAGE = ERROR_HEADER + STACK_TRACE
+
+FUNNY_MESSAGES: dict[str, list[str]] = {
+    "common": [
+        "Bro really changed his {0} :sob:",
+        "I fr got nothing to say :neutral_face:",
+        "Did bro get hacked :skull::pray:",
+        "\\*no comment\\* :no_mouth:",
+    ],
+    "name": [],
+    "avatar": [],
+    "both": [],
+}
 
 
 class Bot(commands.Bot):
@@ -213,7 +227,7 @@ def save_guild_data(
         file: TextIO = file
         # No key = overwrite
         if key is None:
-            json.dump(data, file, **JSON_save)
+            json.dump(data, file, **JSON_SAVE_PERMS)
             return
 
         # Nest into the last entry before the data
@@ -226,7 +240,7 @@ def save_guild_data(
 
         # Overwrite the key
         set_json_key(constrained_data, key[-1], data)
-        json.dump(current_data, file, **JSON_save)
+        json.dump(current_data, file, **JSON_SAVE_PERMS)
         file.truncate()
     finally:
         file.close()
@@ -289,6 +303,64 @@ def get_key(data: Any, key: Any | list[Any], allow_errors: bool = False) -> Any 
     return constrained_data
 
 
+async def check_alert_member(member: discord.Member):
+    save, _ = get_save_from_guild(member.guild)
+
+    if member.bot:
+        return
+
+    channel_id = get_key(save, "setting.channel")
+    if channel_id is None:
+        return
+
+    channel = cast(discord.TextChannel, bot.get_channel(channel_id))
+    if channel is None:
+        return
+
+    if get_key(save, ["members", str(member.id), "opt_out"]):
+        return
+
+    last_name: str | None = get_key(
+        save, ["members", str(member.id), "last_seen", "display_name"]
+    )
+    last_pfp: str | None = get_key(
+        save, ["members", str(member.id), "last_seen", "pfp"]
+    )
+
+    name_changed = last_name and last_name != member.display_name
+    pfp_changed = last_pfp and last_pfp != member.display_avatar.url
+
+    if name_changed and pfp_changed:
+        quip: str = choice(FUNNY_MESSAGES["common"] + FUNNY_MESSAGES["both"])
+        await channel.send(
+            f"# `{last_name}` changed there **name** and **avatar** from:\n"
+            + f"## `{last_name}` [Before Avatar]({last_pfp}) ➡ "
+            + f"`{member.display_name}` [After Avatar]({member.display_avatar.url})\n\n"
+            + quip.format("name _AND_ profile picture")
+        )
+    elif name_changed:
+        quip: str = choice(FUNNY_MESSAGES["common"] + FUNNY_MESSAGES["name"])
+        await channel.send(
+            f"# `{last_name}` changed there **name** from:\n"
+            + f"## `{last_name}` ➡ `{member.display_name}`\n\n"
+            + quip.format("name")
+        )
+    elif pfp_changed:
+        quip: str = choice(FUNNY_MESSAGES["common"] + FUNNY_MESSAGES["avatar"])
+        await channel.send(
+            f"# `{last_name}` changed there **avatar** from:\n"
+            + f"## [Before Avatar]({last_pfp}) ➡ "
+            + f"[After Avatar]({member.display_avatar.url})\n\n"
+            + quip.format("profile picture")
+        )
+
+    save_guild_data(
+        member.guild,
+        {"display_name": member.display_name, "pfp": member.display_avatar.url},
+        ["members", str(member.id), "last_seen"],
+    )
+
+
 if __name__ == "__main__":
     if not path.exists(".env"):
         raise FileNotFoundError(".env file dose not exist!")
@@ -342,12 +414,13 @@ if __name__ == "__main__":
         + "picture or display name change.",
     )
     async def optOut(interaction: discord.Interaction):
-        opt_out_key = ["members", str(interaction.user.id), "opt_out"]
+        pre_key = ["members", str(interaction.user.id)]
         guild = cast(discord.Guild, interaction.guild)
 
         save, _ = get_save_from_guild(guild)
         already_opted_out: bool = get_key(save, opt_out_key) or False
 
+        already_opted_out: bool = get_key(save, pre_key + ["opt_out"]) or False
         if already_opted_out:
             await interaction.response.send_message(
                 "You are already opted out! Run `/optin` to opt back in.",
@@ -355,7 +428,8 @@ if __name__ == "__main__":
             )
             return
 
-        save_guild_data(guild, True, opt_out_key, create_keys=True)
+        save_guild_data(guild, True, pre_key + ["opt_out"], create_keys=True)
+        save_guild_data(guild, None, pre_key + ["last_seen"], create_keys=True)
 
         await interaction.response.send_message(
             "✔ You have successfully been opted out! Run `/optin` to opt back in.",
@@ -435,7 +509,7 @@ if __name__ == "__main__":
             return
 
         channel_id = get_key(save, "setting.channel")
-        if not channel_id:
+        if channel_id is None:
             await interaction.response.send_message(
                 "Channel save not set! Please run `/setchannel` to fix.",
                 ephemeral=True,
@@ -459,6 +533,28 @@ if __name__ == "__main__":
         )
 
         await alert.delete(delay=5)
+
+    @bot.event
+    async def on_message(message: discord.Message):
+        if not message.guild:
+            return
+
+        await check_alert_member(cast(discord.Member, message.author))
+
+    @tasks.loop(minutes=5)
+    async def check_alert_all_members():
+        print("Mass checking and alerting all members in all guilds...")
+
+        member_count = 0
+        for guild in bot.guilds:
+            for member in guild.members:
+                await check_alert_member(member)
+                member_count += 1
+
+        print(
+            f"Mass alert completed! Checked {member_count} members in"
+            + f"{len(bot.guilds)} guilds."
+        )
 
     # Error handling
     @bot.tree.error

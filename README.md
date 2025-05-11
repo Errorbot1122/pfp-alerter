@@ -23,12 +23,13 @@ Here are a list of thing that we need help with!
 **Before 1.0 Releases:**
 
  - [ ] More funny messages
- - [ ] Logo
+ - [x] Logo
  - [ ] An member before and after image render
  - [ ] Leaderboard and Rank commands
  - [ ] Editing quips commands
 
 **Possible features**
+ - [ ] Logo as SVG
  - [ ] Better logging *
  - [ ] AI Generated quips **_(???)_**
  - [ ] Sharing Quips between guilds

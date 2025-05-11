@@ -365,7 +365,7 @@ def save_guild_data(
         the data that you want to overwrite
     key : Optional[any, list[any]], optional
         The specific setting you want to overwrite, if `None`, overwrite
-         every setting
+        every setting
 
         If the setting is nested, separate each key in a list or in a
         period separated string. By default `None`
@@ -486,8 +486,8 @@ def get_overflow_text(
     font: ImageFont.ImageFont,
     suffix: str = "...",
 ) -> str:
-    """Finds a substring of your `text` that dose not exceed `width` in pixels.
-    Adds `suffix` to the end if it dose exceed by default.
+    """Finds a substring of your `text` that dose not exceed `width` in
+    pixels. Adds `suffix` to the end if it dose exceed by default.
 
     Parameters
     ----------
@@ -503,7 +503,8 @@ def get_overflow_text(
     Returns
     -------
     str
-        the overflow prevented text, with the `suffix` when it exceeds `width`
+        the overflow prevented text, with the `suffix` when it exceeds
+        `width`
     """
 
     suffix_width = font.getlength(suffix)
@@ -526,16 +527,16 @@ def get_overflow_text(
 def load_font(
     path: str, is_truetype: Optional[bool] = None, **kwargs
 ) -> ImageFont.ImageFont:
-    """Loads a `path` as an `ImageFont` safely, using the default if any errors
-    occur.
+    """Loads a `path` as an `ImageFont` safely, using the default if any
+    errors occur.
 
     Parameters
     ----------
     path : str
         the path to the font file
     is_truetype : Optional[bool], optional
-        if the font is a truetype font or not. If `None` guesses using file mime.
-        By default None
+        if the font is a truetype font or not. If `None` guesses using
+        file mime. By default None
 
     Returns
     -------
@@ -575,7 +576,8 @@ def open_as_image(uri: str, is_url: bool = False) -> Image.Image:
     uri : str
         the url or path to an image
     is_url : bool, optional
-        whether the `uri` argument is a **url** or a **path**, by default False
+        whether the `uri` argument is a **url** or a **path**, by
+        default False
 
     Returns
     -------
@@ -668,10 +670,11 @@ def render_member(
     height : int, optional
         how tall in pixels the list item should be, by default 64
     avatar_padding : Optional[int], optional
-        the amount of padding that should be givin all around to the avatar in pixels,
-        by default `height // 8`
+        the amount of padding that should be givin all around to the
+        avatar in pixels, by default `height // 8`
     pfp : Optional[str], optional
-        an override for the url of the avatar for the member, by default None
+        an override for the url of the avatar for the member, by default
+        None
     name : Optional[str], optional
         an override for the name of the member, by default None
 
@@ -751,12 +754,14 @@ async def render_member_diff(
     before_pfp : Optional[str], optional
         the old avatar url of the member, by default None
     arrow : str, optional
-        the url or key arrow used in the comparison. If this is instead a value
-        in `ARROW_MAP` it will use that value instead. By default "emoji"
+        the url or key arrow used in the comparison. If this is instead
+        a value in `ARROW_MAP` it will use that value instead. By
+        default "emoji"
     arrow_padding : Optional[int], optional
         the (extra) padding around the arrow, by default `height // 6`
     height : int, optional
-        the height (size) in pixels to generate the `Image`, by default 64
+        the height (size) in pixels to generate the `Image`, by default
+        64
 
     Returns
     -------
@@ -833,6 +838,31 @@ async def send_alert(
     avatar: str,
     diff_file: Optional[discord.File] = None,
 ) -> discord.Message | tuple[discord.Message, discord.Message]:
+    """Sends an alert to the specified channel using the bellow
+    information.
+
+    Parameters
+    ----------
+    channel : discord.TextChannel
+        the channel to sent to alert too
+    title : str
+        the title to title for the alert
+    description : str
+        the description on the alert
+    name : str
+        the name for the user who triggered the alert
+    avatar : str
+        the avatar for the user who triggered the alert
+    diff_file : Optional[discord.File], optional
+        the `File` object to get sent as the diff image, by default None
+
+    Returns
+    -------
+    discord.Message | tuple[discord.Message, discord.Message]
+        the embed message, or both the embed and file message that got
+        sent
+    """
+
     embed = Embed(
         title=title,
         description=description,
@@ -857,6 +887,14 @@ async def send_alert(
 
 
 async def check_alert_member(member: discord.Member):
+    """Checks if the current member has met the criteria to trigger an
+    alert, and sends it if they do
+
+    Parameters
+    ----------
+    member : discord.Member
+        the member to be checked against and alerted if successful
+    """
     save, _ = get_save_from_guild(member.guild)
 
     if member.bot:
